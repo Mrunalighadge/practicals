@@ -1,0 +1,316 @@
+-----------------------------first assignment-----------------------------
+
+# Create a data frame for students
+Student <- data.frame(
+  s_id = c(1:5),
+  s_name = c("Prajakta", "Sanjay", "Rokade", "Nikhil", "Nalini"),
+  s_age = c(23, 34, 45, 56, 20),
+  s_marks = c(89, 98, 78, 87, 67),
+  stringsAsFactors = FALSE # Prevents automatic factor conversion
+)
+
+# Print the Student data frame
+print(Student) 
+
+# Extract and print student names
+print(Student$s_name)
+
+# Add a new row to the Student data frame
+new_row <- data.frame(s_id = 6, s_name = "Priya", s_age = 34, s_marks = 78)
+Student <- rbind(Student, new_row)
+print(Student)
+
+# Create first names and last names
+first_name <- c("Prajakta", "Sanjay", "Priya", "Nikhil", "Nalini")
+last_name <- c("Rokade", "Shinde", "Kothare", "More", "Jadhav")
+
+# Concatenate first name and last name to get full name
+full_name <- paste(first_name, last_name)
+print(full_name)
+
+# Count number of characters in full names
+noofChar <- nchar(full_name)
+print(noofChar)
+
+# Extract first three characters of first names
+s <- substr(first_name, 1, 3)
+print(s)
+
+# Create a barplot for student marks
+barplot(
+  Student$s_marks,
+  names.arg = Student$s_name,
+  col = "pink",
+  xlab = "Student Name",
+  ylab = "Marks",
+  main = "Student Bar Chart"
+)
+------------------------Data Preprocessing------------------
+# Load required library
+library(dplyr)
+
+# Create DataFrame
+emp <- data.frame(
+  id = 1:10,
+  name = c("Vaish", "Bhavana", "Karan", "Isha", "Om", "Ritu", "Monia", "Dhana", "Piyush", "Rahul"),
+  age = c(21, NA, 20, 18, 20, 24, NA, 25, 23, 22),
+  salary = c(10000, 12000, 15000, 34000, 50000, NA, 20000, 60000, 30000, 17000),
+  dept = c("Comp Sci", "Physics", "English", "Biology", "Psychology", "Inventory", "Sales", "HR", "Technical", "Acting")
+)
+
+# Print original data
+print("Original Data:")
+print(emp)
+
+# ---- Handling Missing Values ----
+print("Identify Missing Values:")
+print(colSums(is.na(emp)))  # Count missing values in each column
+
+# Impute missing values for age and salary with the mean of respective columns
+emp$age[is.na(emp$age)] <- mean(emp$age, na.rm = TRUE)
+emp$salary[is.na(emp$salary)] <- mean(emp$salary, na.rm = TRUE)
+
+print("Data after handling missing values:")
+print(emp)
+
+# ---- Normalize Numerical Columns ----
+normalize <- function(x) {
+  return((x - min(x)) / (max(x) - min(x)))
+}
+
+emp$age <- normalize(emp$age)
+emp$salary <- normalize(emp$salary)
+
+print("Data after Normalization:")
+print(emp)
+
+# ---- Standardization (Z-score Scaling) ----
+standardize <- function(x) {
+  return((x - mean(x)) / sd(x))
+}
+
+emp$age_zscore <- standardize(emp$age)
+emp$salary_zscore <- standardize(emp$salary)
+
+print("Data after Standardization:")
+print(emp)
+
+# ---- Encode Categorical Variables (One-Hot Encoding) ----
+emp$dept <- as.factor(emp$dept)  # Convert dept to a factor
+dept_dummies <- model.matrix(~ dept - 1, data = emp)  # Create dummy variables
+
+# Combine with original dataset (excluding old dept column)
+emp <- cbind(emp, dept_dummies)
+emp$dept <- NULL  # Remove original categorical column
+
+print("Data after Encoding Categorical Variables:")
+print(emp)
+
+# ---- Splitting Data into Training and Testing Sets ----
+set.seed(123)  # Set seed for reproducibility
+sample_size <- floor(0.8 * nrow(emp))  # 80% training, 20% testing
+train_indices <- sample(seq_len(nrow(emp)), size = sample_size)
+
+train_data <- emp[train_indices, ]
+test_data <- emp[-train_indices, ]
+
+print("Training Data:")
+print(train_data)
+print("Testing Data:")
+print(test_data)
+
+
+
+----------------Data Classification-----------------
+  
+1.Manually Add and Explore the Dataset:- 
+# Manually create a meaningful dataset 
+data <- data.frame( 
+age = c(25, 45, 35, 50, 23, 40, 60, 28, 38, 55), 
+blood_pressure = c(120, 140, 130, 150, 115, 135, 145, 125, 130, 160), 
+cholesterol = c(200, 240, 220, 250, 180, 230, 260, 190, 210, 270), 
+bmi = c(22.0, 30.5, 26.8, 32.0, 21.5, 28.0, 31.0, 23.5, 27.0, 33.5), 
+risk_category = as.factor(c('low', 'high', 'medium', 'high', 'low', 'medium', 'high', 'low', 
+'medium', 'high')) 
+) 
+
+# Display the manually created dataset 
+print("Manually Created Dataset:") 
+print(data) 
+
+2. Preprocess the Data:- 
+# Check for missing values 
+print("Missing values count:") 
+print(sum(is.na(data)))
+ 
+# Normalize the numerical features 
+normalize <- function(x) { 
+return ((x - min(x)) / (max(x) - min(x))) 
+} 
+data[, 1:4] <- as.data.frame(lapply(data[, 1:4], normalize)) 
+# Display the first few rows of the normalized dataset 
+print("Normalized Dataset:") 
+print(data) 
+
+
+3. Split the Data into Training and Testing Sets:- 
+# Set the seed for reproducibility 
+set.seed(42) 
+# Split the data into training (70%) and testing (30%) sets manually 
+sample_size <- floor(0.7 * nrow(data)) 
+train_indices <- sample(seq_len(nrow(data)), size = sample_size) 
+training_set <- data[train_indices, ] 
+testing_set <- data[-train_indices, ] 
+# Display the dimensions of the training and testing sets 
+print("Dimensions of Training Set:") 
+print(dim(training_set)) 
+print("Dimensions of Testing Set:") 
+print(dim(testing_set)) 
+4.Build a Classification Model:- 
+# Simple classification using K-Nearest Neighbors (KNN) algorithm 
+# Define the distance function 
+euclidean_distance <- function(x1, x2) { 
+return (sqrt(sum((x1 - x2) ^ 2))) 
+} 
+# Define the KNN function 
+knn <- function(train, test, k) { 
+predictions <- c() 
+for (i in 1:nrow(test)) { 
+distances <- apply(train[, -5], 1, euclidean_distance, x2 = test[i, -5]) 
+nearest <- order(distances)[1:k] 
+nearest_classes <- train[nearest, 5] 
+predictions <- c(predictions, names(sort(table(nearest_classes), decreasing = TRUE))[1]) 
+} 
+return (predictions) 
+} 
+# Predict the risk category on the testing set using KNN with k = 3 
+k <- 3 
+predictions <- knn(training_set, testing_set, k) 
+# Display predictions 
+print("Predictions:") 
+print(predictions) 
+5. Evaluate the Model 
+# Create a confusion matrix 
+confusion_matrix <- table(testing_set$risk_category, predictions) 
+# Print the confusion matrix 
+print("Confusion Matrix:") 
+print(confusion_matrix) 
+# Calculate the accuracy 
+accuracy <- sum(diag(confusion_matrix)) / sum(confusion_matrix) 
+print(paste("Accuracy:", round(accuracy, 2)))
+
+
+
+
+-------------------------------Regression -------------------------------------
+
+advertising_budget<- c(10, 15, 8, 25, 30, 18, 22, 29, 13, 27)
+sales <- c(40, 50, 35, 75, 85, 60, 70, 82, 45, 80)
+# Combine into a data frame
+data <- data.frame(advertising_budget, sales)
+# Display the structure of the dataset
+str(data)
+# Display summary statistics
+summary(data)
+# Scatter plot of sales vs. advertising budget
+plot(data$advertising_budget, data$sales, main = "Scatter Plot of Sales vs Advertising Budget",
+     xlab = "Advertising Budget (in thousands)", ylab = "Sales (in thousands)",
+     pch = 19, col = "blue")
+
+# Fit the linear regression model
+model <- lm(sales ~ advertising_budget, data = data)
+
+# Display the summary of the model
+summary(model)
+
+# Scatter plot with regression line
+plot(data$advertising_budget, data$sales, main = "Scatter Plot with Regression Line",
+     xlab = "Advertising Budget (in thousands)", ylab = "Sales (in thousands)",
+     pch = 19, col = "blue")
+
+# Add the regression line
+abline(model, col = "red", lwd = 2)
+
+
+-------------------------------Association Rules Assignment---------------------------------
+ 
+# Create a manual transaction dataset 
+transactions <- data.frame( 
+TID = 1:6, 
+Milk = c(1, 1, 0, 1, 0, 1), 
+Bread = c(1, 0, 1, 1, 0, 1), 
+Butter = c(0, 1, 1, 1, 1, 0), 
+Cheese = c(1, 0, 0, 1, 1, 0) 
+) 
+# Print the dataset 
+print(transactions) 
+# Remove TID column 
+transactions <- transactions[, -1] 
+# Print the updated dataset 
+print(transactions) 
+# Calculate support for Milk and Bread 
+support_milk_bread <- sum(transactions$Milk == 1 & 
+transactions$Bread == 1) / nrow(transactions) 
+# Calculate support for Milk 
+support_milk <- sum(transactions$Milk == 1) / 
+nrow(transactions) 
+# Calculate support for Bread 
+support_bread <- sum(transactions$Bread == 1) / 
+nrow(transactions) 
+# Print the Support results 
+cat("Support (Milk -> Bread):", support_milk_bread, 
+"\n") 
+# Calculate confidence for Milk -> Bread 
+confidence_milk_bread <- support_milk_bread / 
+support_milk 
+# Print the Confidence results 
+cat("Confidence (Milk -> Bread):", 
+confidence_milk_bread, "\n") 
+# Calculate lift for Milk -> Bread 
+lift_milk_bread <- confidence_milk_bread / 
+support_bread 
+# Print the lift results 
+cat("Lift (Milk -> Bread):", lift_milk_bread, "\n")
+
+
+----------------------Clustring Assignment-------------------------------
+ 
+data <- data.frame( 
+ID = 1:10, 
+Height = c(5.1, 5.5, 5.8, 6.0, 5.4, 5.7, 6.1, 5.3, 5.9, 5.6), 
+Weight = c(130, 150, 160, 180, 145, 155, 170, 140, 165, 158) 
+) 
+print("Dataframe:") 
+print(data) 
+k <- 2 
+centroids <- data.frame( 
+Height = c(5.2, 5.8), 
+Weight = c(135, 165) 
+) 
+print("Initial Centroids:") 
+print(centroids) 
+#Euclidean distance 
+euclidean_distance <- function(x1, y1, x2, y2) { 
+sqrt((x1 - x2)^2 + (y1 - y2)^2) 
+} 
+# Assign clusters 
+assign_clusters <- function(data, centroids) { 
+clusters <- numeric(nrow(data)) 
+for (i in 1:nrow(data)) { 
+distances <- numeric(nrow(centroids)) 
+for (j in 1:nrow(centroids)) { 
+distances[j] <- euclidean_distance(data$Height[i], data$Weight[i], centroids$Height[j], 
+centroids$Weight[j]) 
+} 
+clusters[i] <- which.min(distances) 
+} 
+return(clusters) 
+} 
+data$Cluster <- assign_clusters(data, centroids) 
+print("Data with Assigned Clusters:") 
+print(data) 
+#Visualization 
+colors <- c("red", "blue") 
+plot(data$Height, data$Weight, col = colors[data$Cluster], pch = 19,  
+xlab = "Height", ylab = "Weight", main = "K-means Clustering") 
+points(centroids$Height, centroids$Weight, col = "black", pch = 8, cex = 2)
